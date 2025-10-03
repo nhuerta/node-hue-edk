@@ -1,0 +1,16 @@
+{
+  "name": "hue-edk-native",
+  "version": "1.0.0",
+  "description": "Native addon for Hue EDK",
+  "main": "build/Release/hue_edk.node",
+  "scripts": {
+    "install": "node-gyp rebuild"
+  },
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "^8.5.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^10.0.0"
+  }
+}

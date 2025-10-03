@@ -1,0 +1,50 @@
+{
+  "name": "@nhuerta/node-hue-edk",
+  "version": "1.0.0",
+  "description": "Node.js wrapper for Philips Hue Entertainment Development Kit (EDK)",
+  "main": "src/hue.ts",
+  "types": "src/hue.ts",
+  "private": true,
+  "exports": {
+    ".": "./src/hue.ts",
+    "./config": "./src/config.ts",
+    "./colors": "./src/hue-light-control.ts"
+  },
+  "scripts": {
+    "build": "cd native && npm install",
+    "rebuild": "cd native && npm rebuild",
+    "deploy-binary": "node scripts/deploy-binary.js",
+    "build:deploy": "npm run build && npm run deploy-binary",
+    "postinstall": "node-gyp-build-test"
+  },
+  "keywords": [
+    "philips-hue",
+    "hue",
+    "entertainment",
+    "edk",
+    "lights",
+    "native-addon",
+    "node-addon"
+  ],
+  "author": "nhuerta",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nhuerta/node-hue-edk.git"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "node-addon-api": "^8.0.0",
+    "node-gyp-build": "^4.8.4"
+  },
+  "devDependencies": {
+    "node-gyp": "^10.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
