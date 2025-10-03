@@ -4,6 +4,7 @@
   "description": "Node.js wrapper for Philips Hue Entertainment Development Kit (EDK)",
   "main": "src/hue.ts",
   "types": "src/hue.ts",
+  "type": "module",
   "private": true,
   "exports": {
     ".": "./src/hue.ts",
@@ -15,7 +16,10 @@
     "rebuild": "cd native && npm rebuild",
     "deploy-binary": "node scripts/deploy-binary.js",
     "build:deploy": "npm run build && npm run deploy-binary",
-    "postinstall": "node-gyp-build-test"
+    "postinstall": "node-gyp-build-test",
+    "typecheck": "bun node_modules/typescript/bin/tsc --noEmit",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix"
   },
   "keywords": [
     "philips-hue",
@@ -37,9 +41,13 @@
     "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^9.35.0",
     "node-gyp": "^10.0.0",
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
