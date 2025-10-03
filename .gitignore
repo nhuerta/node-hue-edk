@@ -1,0 +1,13 @@
+node_modules/
+native/node_modules/
+native/build/
+*.log
+.env
+.env.local
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
