@@ -7,9 +7,9 @@ Node.js wrapper for the Philips Hue Entertainment Development Kit (EDK), providi
 Install from GitHub:
 
 ```bash
-npm install github:nhuerta/node-hue-edk#semver:^1.0.0
+npm install github:nhuerta/node-hue-edk#v1.0.0
 # or
-bun install github:nhuerta/node-hue-edk#semver:^1.0.0
+bun install github:nhuerta/node-hue-edk#v1.0.0
 ```
 
 ### Pre-built Binaries
@@ -30,7 +30,7 @@ npm run build
 ```bash
 mkdir my-hue-project && cd my-hue-project
 bun init -y
-bun install github:nhuerta/node-hue-edk#semver:^1.0.0
+bun install github:nhuerta/node-hue-edk#v1.0.0
 ```
 
 ### 2. Configure Bridge
