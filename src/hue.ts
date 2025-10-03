@@ -8,18 +8,15 @@ export interface HueConfig {
     groupId: string;
 }
 
-// Utility function inlined to avoid external dependency
-function getNumber(value: unknown): number {
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') return parseFloat(value) || 0;
-    return 0;
+interface HueAddon {
+    HueWrapper: typeof HueWrapperType;
 }
 
 // Load native addon using node-gyp-build (platform-independent)
 const gyp = require('node-gyp-build');
 const path = require('path');
-const addon = gyp(path.join(__dirname, '..'));
-const { HueWrapper } = addon as { HueWrapper: typeof HueWrapperType };
+const addon = gyp(path.join(__dirname, '..')) as HueAddon;
+const { HueWrapper } = addon;
 
 export class Hue {
     private hueWrapper: HueWrapperType;
@@ -28,7 +25,6 @@ export class Hue {
     private effectRunning: boolean = false;
     private updateInterval: ReturnType<typeof setTimeout> | null = null;
     private effectStartTime: number = 0;
-    private currentEffectName: string = 'unknown'; // TEMP LOGGING - REMOVE THIS LINE
     private debugLogEnabled: boolean = false;
 
     constructor(config: HueConfig) {
@@ -79,7 +75,6 @@ export class Hue {
     }
 
     stopCurrentEffect(): void {
-        this.logEffectStop(); // TEMP LOGGING - REMOVE THIS LINE
         this.effectRunning = false;
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
@@ -102,8 +97,6 @@ export class Hue {
         this.stopCurrentEffect();
         this.effectRunning = true;
         this.effectStartTime = Date.now();
-
-        this.logEffectStart(updateFunc); // TEMP LOGGING - REMOVE THIS LINE
 
         const update = () => {
             if (!this.effectRunning) {
@@ -516,12 +509,12 @@ export class Hue {
                 if (index === activeSegment) {
                     trailBrightness[index] = 1.0;
                 } else {
-                    trailBrightness[index] = getNumber(trailBrightness[index]) * 0.85;
+                    trailBrightness[index] = (trailBrightness[index] ?? 0) * 0.85;
                 }
 
                 const colorFactor = index / 3;
                 const color = interpolateColor(color1, color2, colorFactor);
-                const brightness = getNumber(trailBrightness[index]);
+                const brightness = trailBrightness[index] ?? 0;
                 const dimmedColor = {
                     r: Math.round(color.r * brightness),
                     g: Math.round(color.g * brightness),
@@ -1468,86 +1461,6 @@ export class Hue {
             }
         });
     }
-
-    // ========== TEMP LOGGING METHODS - REMOVE ENTIRE SECTION ==========
-    private logEffectStart(updateFunc: (elapsed: number) => void): void {
-        if (!this.debugLogEnabled) {
-            return;
-        }
-        // Capture effect details from stack trace
-        const stack = new Error().stack;
-
-        // Parse stack trace to find the calling method
-        const stackLines = stack?.split('\n') || [];
-        let effectName = 'unknown';
-
-        // Skip first line (Error) and startUpdateLoop, find the actual effect method
-        for (const line of stackLines) {
-            const match = line.match(/at\s+(?:Hue\.)?(\w+)\s*\(/);
-            if (match?.[1] && match[1] !== 'startUpdateLoop' && match[1] !== 'run' && match[1] !== 'Error' && match[1] !== 'logEffectStart') {
-                effectName = match[1];
-                break;
-            }
-        }
-
-        // Store the effect name for stop logging
-        this.currentEffectName = effectName;
-
-        // Extract parameters from the closure and stack trace
-        const funcString = updateFunc.toString();
-        const stackString = stack || '';
-
-        // Try to extract colors from various formats
-        const colorObjectMatches = [...funcString.matchAll(/{[^{}]*r:\s*\d+[^{}]*g:\s*\d+[^{}]*b:\s*\d+[^{}]*}/g)];
-        const colorNameMatches = [...funcString.matchAll(/COLORS\.(\w+)/g)].map(m => m[1]);
-        const stackColorMatches = [...stackString.matchAll(/COLORS\.(\w+)/g)].map(m => m[1]);
-
-        // Extract timing parameters
-        const durationMatch = funcString.match(/runTime[:\s]*(\d+)/) || stackString.match(/duration[:\s]*(\d+)/);
-        const periodMatch = funcString.match(/period[:\s]*(\d+)/);
-        const speedMatch = funcString.match(/speed[:\s]*(\d+)/) || funcString.match(/bounceSpeed[:\s]*(\d+)/) || funcString.match(/pulseSpeed[:\s]*(\d+)/);
-        const flashCountMatch = funcString.match(/flashCount[:\s]*(\d+)/);
-        const flashSpeedMatch = funcString.match(/flashSpeed[:\s]*(\d+)/);
-
-        const effectLog: Record<string, unknown> = {
-            effect: effectName,
-            startTime: new Date(this.effectStartTime).toISOString(),
-            duration: durationMatch?.[1] ? parseInt(durationMatch[1]) : 'continuous',
-            timestamp: this.effectStartTime
-        };
-
-        // Only add optional fields if they exist
-        if (periodMatch?.[1]) {
-            effectLog.period = parseInt(periodMatch[1]);
-        }
-        if (speedMatch?.[1]) {
-            effectLog.speed = parseInt(speedMatch[1]);
-        }
-        if (flashCountMatch?.[1]) {
-            effectLog.flashCount = parseInt(flashCountMatch[1]);
-        }
-        if (flashSpeedMatch?.[1]) {
-            effectLog.flashSpeed = parseInt(flashSpeedMatch[1]);
-        }
-
-        // Add colors
-        const uniqueColors = [...new Set([...colorNameMatches, ...stackColorMatches])];
-        effectLog.colors = uniqueColors.length > 0 ? uniqueColors :
-                          colorObjectMatches.length > 0 ? 'RGB objects detected' : 'dynamic';
-
-        console.log('🎨 Light Effect Started:', JSON.stringify(effectLog, null, 2));
-    }
-
-    private logEffectStop(): void {
-        if (!this.debugLogEnabled) {
-            return;
-        }
-        if (this.effectRunning && this.effectStartTime > 0) {
-            const runTime = Date.now() - this.effectStartTime;
-            console.log(`🛑 Light Effect Stopped: ${this.currentEffectName} (ran for ${runTime}ms)`);
-        }
-    }
-    // ========== END TEMP LOGGING METHODS ==========
 }
 
 export { COLORS, type Color } from './hue-light-control';
