@@ -23,81 +23,19 @@ For platforms without pre-built binaries:
 npm run build
 ```
 
-## Usage
+## Quick Start
 
-```typescript
-import { Hue, COLORS, type Color } from '@nhuerta/node-hue-edk';
+### 1. Install
 
-const hue = new Hue({
-    appName: 'MyApp',
-    deviceName: 'MyDevice',
-    groupId: '200'
-});
-
-await hue.initialize();
-
-// Solid colors
-hue.setSolidColor(COLORS.blue);
-
-// Effects
-hue.percentageBar(75);  // Health bar (0-100)
-hue.gradientWave(COLORS.red, COLORS.yellow, 2000, 5000);
-hue.rippleGradient(COLORS.purple, 1000, 3000);
-hue.breathingGradient(COLORS.red, COLORS.black, 1500);
-hue.pulseWave(COLORS.cyan, COLORS.white, 1000, 3000);
-hue.rainbowWave(2000, 5000);
-hue.countdownPulse(30);  // Countdown in seconds
+```bash
+mkdir my-hue-project && cd my-hue-project
+bun init -y
+bun install github:nhuerta/node-hue-edk#semver:^1.0.0
 ```
 
-## API
+### 2. Configure Bridge
 
-### Constructor
-
-```typescript
-new Hue(config: HueConfig)
-
-interface HueConfig {
-    appName: string;
-    deviceName: string;
-    groupId: string;
-}
-```
-
-### Methods
-
-- `initialize(): Promise<boolean>`
-- `shutdown(): void`
-- `setSolidColor(color: Color): void`
-- `clearAllLights(): void`
-- `percentageBar(percentage: number): void`
-- `gradientWave(color1: Color, color2: Color, duration: number, runTime: number): void`
-- `rippleGradient(color: Color, duration: number, runTime: number): void`
-- `breathingGradient(color1: Color, color2: Color, period: number, runTime: number): void`
-- `chaseGradient(color: Color, speed: number, runTime: number): void`
-- `rainbowWave(speed: number, runTime: number): void`
-- `pulseWave(color1: Color, color2: Color, speed: number, runTime: number): void`
-- `countdownPulse(totalSeconds: number): void`
-- `flashColor(color: Color, duration: number): void`
-- `randomColorSequence(duration: number): void`
-
-### Color Type
-
-```typescript
-interface Color {
-    r: number;        // 0-255
-    g: number;        // 0-255
-    b: number;        // 0-255
-    alpha?: number;   // 0-1 (optional, for blending)
-}
-```
-
-### COLORS
-
-39 predefined colors including: `red`, `green`, `blue`, `yellow`, `purple`, `cyan`, `white`, `orange`, `pink`, `darkRed`, `brightGreen`, `emerald`, `electricBlue`, `iceBlue`, `gold`, `amber`, `scarlet`, `violet`, etc.
-
-## Environment Configuration
-
-Create a `.env` file:
+Create `.env` file:
 
 ```env
 HUE_BRIDGE_ID=your-bridge-id
@@ -105,6 +43,47 @@ HUE_BRIDGE_IP=192.168.1.x
 HUE_USERNAME=your-username
 HUE_CLIENT_KEY=your-client-key
 ```
+
+> **Note:** Get these values from your Hue bridge setup. The bridge creates a `bridge.json` file automatically - this is git-ignored and not required for configuration.
+
+### 3. Create Test Script
+
+`test.ts`:
+```typescript
+import 'dotenv/config';
+import { Hue, COLORS } from '@nhuerta/node-hue-edk';
+
+const hue = new Hue({
+    appName: 'TestApp',
+    deviceName: 'TestDevice',
+    groupId: '200'  // Your entertainment group ID
+});
+
+if (await hue.initialize()) {
+    hue.setSolidColor(COLORS.green);
+    setTimeout(() => hue.shutdown(), 2000);
+}
+```
+
+### 4. Run
+
+```bash
+bun run test.ts
+```
+
+## Effects
+
+This library includes 40+ effects. See [EFFECTS.md](EFFECTS.md) for complete documentation.
+
+**Examples:**
+```typescript
+hue.percentageBar(75);
+hue.gradientWave(COLORS.red, COLORS.yellow, 2000, 5000);
+hue.rainbowWave(2000, 5000);
+hue.countdownPulse(30);
+hue.lightningStrike(1000);
+```
+
 
 ## Building from Source
 
