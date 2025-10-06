@@ -14,9 +14,9 @@ bun install github:nhuerta/node-hue-edk#v1.0.0
 
 ### Pre-built Binaries
 
-- **Windows x64:** ✅ Included (no build required)
-- **macOS x64:** ❌ Build from source required
-- **Linux x64:** ❌ Build from source required
+- **Windows x64:** Included (no build required)
+- **macOS x64:** Build from source required
+- **Linux x64:** Build from source required
 
 For platforms without pre-built binaries:
 ```bash
