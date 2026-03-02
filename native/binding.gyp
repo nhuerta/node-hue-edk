@@ -45,7 +45,11 @@
             "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
             "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
             "MACOSX_DEPLOYMENT_TARGET": "12.0",
-            "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-Wno-dynamic-exception-spec"]
+            "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-Wno-dynamic-exception-spec"],
+            "OTHER_LDFLAGS": [
+              "-framework", "CoreFoundation",
+              "-framework", "SystemConfiguration"
+            ]
           }
         }],
         ["OS=='win'", {
