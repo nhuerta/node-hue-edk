@@ -12,8 +12,8 @@
         "../../EDK/libhuestream/support/include",
         "../../EDK/libhuestream/bridgediscovery/include",
         "../../EDK/libhuestream/huestream/connect",
-        "../../EDK/build-fresh/external_install/include",
-        "../../EDK/build-fresh/external_install/include/libjson",
+        "../../EDK/build/external_install/include",
+        "../../EDK/build/external_install/include/libjson",
         "../../EDK/3rd_party/boost/src/boost_1_82_0",
         "../../EDK/libhuestream/huestream/effect",
         "../../EDK/libhuestream/huestream/effect/effects",
@@ -22,26 +22,50 @@
       "defines": [
         "NAPI_DISABLE_CPP_EXCEPTIONS",
         "NODE_ADDON_API_DISABLE_DEPRECATED",
-        "_WIN32_WINNT=0x0600",
-        "NOMINMAX",
         "NGHTTP2_STATICLIB",
         "CURL_STATICLIB"
       ],
       "conditions": [
-        ["OS=='win'", {
+        ["OS=='mac'", {
           "libraries": [
-            "<(module_root_dir)/../../EDK/build-fresh/bin/huestream.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/bin/support.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/bin/bridge_discovery.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/mbedtls.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/mbedcrypto.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/mbedx509.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/mbedcl_wrapper.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/edtls_client.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/json.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/libcurl.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/mdns_responder.lib",
-            "<(module_root_dir)/../../EDK/build-fresh/external_install/lib/nghttp2_static.lib",
+            "<(module_root_dir)/../../EDK/build/bin/libhuestream.a",
+            "<(module_root_dir)/../../EDK/build/libhuestream/support/libsupport.a",
+            "<(module_root_dir)/../../EDK/build/libhuestream/bridgediscovery/libbridge_discovery.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedtls.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedcrypto.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedx509.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedcl_wrapper.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libedtls_client.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libjson.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libcurl.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmdns_responder.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libnghttp2_static.a"
+          ],
+          "xcode_settings": {
+            "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+            "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
+            "MACOSX_DEPLOYMENT_TARGET": "12.0",
+            "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-Wno-dynamic-exception-spec"]
+          }
+        }],
+        ["OS=='win'", {
+          "defines": [
+            "_WIN32_WINNT=0x0600",
+            "NOMINMAX"
+          ],
+          "libraries": [
+            "<(module_root_dir)/../../EDK/build/bin/huestream.lib",
+            "<(module_root_dir)/../../EDK/build/bin/support.lib",
+            "<(module_root_dir)/../../EDK/build/bin/bridge_discovery.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/mbedtls.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/mbedcrypto.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/mbedx509.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/mbedcl_wrapper.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/edtls_client.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/json.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libcurl.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/mdns_responder.lib",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/nghttp2_static.lib",
             "ws2_32.lib",
             "iphlpapi.lib",
             "winhttp.lib",
@@ -70,6 +94,24 @@
               "AdditionalOptions": ["/OPT:ICF", "/OPT:REF", "/LTCG"]
             }
           }
+        }],
+        ["OS=='linux'", {
+          "libraries": [
+            "<(module_root_dir)/../../EDK/build/bin/libhuestream.a",
+            "<(module_root_dir)/../../EDK/build/libhuestream/support/libsupport.a",
+            "<(module_root_dir)/../../EDK/build/libhuestream/bridgediscovery/libbridge_discovery.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedtls.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedcrypto.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedx509.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmbedcl_wrapper.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libedtls_client.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libjson.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libcurl.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libmdns_responder.a",
+            "<(module_root_dir)/../../EDK/build/external_install/lib/libnghttp2_static.a"
+          ],
+          "cflags_cc": ["-std=c++17", "-fexceptions"],
+          "cflags!": ["-fno-exceptions"]
         }]
       ]
     }
