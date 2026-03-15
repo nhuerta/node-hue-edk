@@ -128,8 +128,10 @@ HueWrapper::HueWrapper(const Napi::CallbackInfo& info)
 
 HueWrapper::~HueWrapper() {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (streaming_ && hueStream_) {
-        hueStream_->Stop();
+    if (hueStream_) {
+        if (streaming_) {
+            hueStream_->Stop();
+        }
         hueStream_->ShutDown();
     }
 }

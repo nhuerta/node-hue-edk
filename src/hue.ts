@@ -44,6 +44,7 @@ export class Hue {
             const connected = this.hueWrapper.connectManual(BRIDGE_CONFIG);
             if (!connected) {
                 console.log('Hue connection failed');
+                this.hueWrapper.shutdown();
                 return false;
             }
 
@@ -54,6 +55,7 @@ export class Hue {
             const streaming = this.hueWrapper.start();
             if (!streaming) {
                 console.log('Hue streaming failed');
+                this.hueWrapper.shutdown();
                 return false;
             }
 
@@ -61,17 +63,15 @@ export class Hue {
             return true;
         } catch (error) {
             console.log('Hue initialization error:', error);
+            this.hueWrapper.shutdown();
             return false;
         }
     }
 
     shutdown(): void {
-        this.clearAllLights();
-        try {
-            this.hueWrapper.stop();
-            this.hueWrapper.shutdown();
-        } catch {
-        }
+        this.stopCurrentEffect();
+        try { this.hueWrapper.stop(); } catch {}
+        try { this.hueWrapper.shutdown(); } catch {}
     }
 
     stopCurrentEffect(): void {
