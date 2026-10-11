@@ -53,6 +53,7 @@ private:
     Napi::Value SetLightBrightness(const Napi::CallbackInfo& info);
 
     Napi::Value GetLightIds(const Napi::CallbackInfo& info);
+    Napi::Value GetGroups(const Napi::CallbackInfo& info);
     Napi::Value Update(const Napi::CallbackInfo& info);
     Napi::Value GetStatus(const Napi::CallbackInfo& info);
     Napi::Value Shutdown(const Napi::CallbackInfo& info);
@@ -96,6 +97,7 @@ Napi::Object HueWrapper::Init(Napi::Env env, Napi::Object exports) {
         InstanceMethod("setBrightness", &HueWrapper::SetBrightness),
         InstanceMethod("setLightBrightness", &HueWrapper::SetLightBrightness),
         InstanceMethod("getLightIds", &HueWrapper::GetLightIds),
+        InstanceMethod("getGroups", &HueWrapper::GetGroups),
         InstanceMethod("update", &HueWrapper::Update),
         InstanceMethod("getStatus", &HueWrapper::GetStatus),
         InstanceMethod("shutdown", &HueWrapper::Shutdown)
@@ -220,7 +222,13 @@ Napi::Value HueWrapper::ConnectManual(const Napi::CallbackInfo& info) {
         // Check connection result
         auto result = hueStream_->GetConnectionResult();
         connected_ = (result == ConnectResult::ReadyToStart || result == ConnectResult::Streaming);
-        
+        if (!connected_ && result == ConnectResult::ActionRequired) {
+            // The bridge is reachable and authorized but has more than one entertainment
+            // area, so the EDK could not auto-select one. That is not a connection failure:
+            // selectGroup() completes the connection.
+            connected_ = (hueStream_->GetLoadedBridgeStatus() == BRIDGE_INVALID_GROUP_SELECTED);
+        }
+
         return Napi::Boolean::New(env, connected_);
         
     } catch (const std::exception& e) {
@@ -251,8 +259,11 @@ Napi::Value HueWrapper::SelectGroup(const Napi::CallbackInfo& info) {
         
         // Select group via EDK (blocking call - waits until ready)
         hueStream_->SelectGroup(groupId);
-        
-        return Napi::Boolean::New(env, true);
+
+        // Report whether the bridge actually has this group (ids are Clip v2 UUIDs)
+        auto bridge = hueStream_->GetLoadedBridge();
+        bool selected = bridge != nullptr && bridge->IsValidGroupSelected() && bridge->GetSelectedGroup() == groupId;
+        return Napi::Boolean::New(env, selected);
         
     } catch (const std::exception& e) {
         Napi::Error::New(env, std::string("Group selection failed: ") + e.what())
@@ -338,9 +349,38 @@ Napi::Value HueWrapper::GetLightIds(const Napi::CallbackInfo& info) {
     }
 }
 
+Napi::Value HueWrapper::GetGroups(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    Napi::Array groups = Napi::Array::New(env);
+
+    if (!initialized_ || !hueStream_) {
+        return groups;
+    }
+
+    try {
+        auto list = hueStream_->GetLoadedBridgeGroups();
+        uint32_t index = 0;
+        if (list) {
+            for (auto& group : *list) {
+                if (!group) continue;
+                Napi::Object g = Napi::Object::New(env);
+                g.Set("id", Napi::String::New(env, group->GetId()));
+                g.Set("name", Napi::String::New(env, group->GetName()));
+                groups.Set(index++, g);
+            }
+        }
+        return groups;
+
+    } catch (const std::exception& e) {
+        Napi::Error::New(env, std::string("GetGroups failed: ") + e.what())
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+}
+
 Napi::Value HueWrapper::Update(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    
+
     // With render thread enabled, updates happen automatically
     // This method is kept for compatibility but isn't needed
     

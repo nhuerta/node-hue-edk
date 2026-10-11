@@ -1,6 +1,6 @@
 {
   "name": "@nhuerta/node-hue-edk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Node.js wrapper for Philips Hue Entertainment Development Kit (EDK)",
   "main": "src/hue.ts",
   "types": "src/hue.ts",

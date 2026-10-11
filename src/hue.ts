@@ -48,9 +48,15 @@ export class Hue {
                 return false;
             }
 
-            this.hueWrapper.selectGroup(this.groupId);
+            const resolvedGroupId = await this.resolveGroupId(this.groupId);
+            const selected = this.hueWrapper.selectGroup(resolvedGroupId);
+            if (!selected) {
+                const available = this.hueWrapper.getGroups().map(g => `${g.name} (${g.id})`).join(', ');
+                console.log(`Hue entertainment area '${this.groupId}' not found on bridge. Available: ${available || 'none'}`);
+                this.hueWrapper.shutdown();
+                return false;
+            }
             await new Promise(resolve => setTimeout(resolve, 1000));
-            this.hueWrapper.getStatus();
 
             const streaming = this.hueWrapper.start();
             if (!streaming) {
@@ -66,6 +72,51 @@ export class Hue {
             this.hueWrapper.shutdown();
             return false;
         }
+    }
+
+    /**
+     * Map the configured group id to the Clip v2 entertainment area UUID the EDK expects.
+     * Accepts a UUID, a v1 numeric id ("200" or "/groups/200"), or an area name.
+     */
+    private async resolveGroupId(configured: string): Promise<string> {
+        const wanted = configured.trim();
+        const groups = this.hueWrapper.getGroups();
+        if (groups.some(g => g.id === wanted)) {
+            return wanted;
+        }
+
+        const v1Id = wanted.replace(/^\/groups\//, '');
+        if (/^\d+$/.test(v1Id)) {
+            try {
+                const response = await fetch(`https://${BRIDGE_CONFIG.ip}/clip/v2/resource/entertainment_configuration`, {
+                    headers: { 'hue-application-key': BRIDGE_CONFIG.username },
+                    // The bridge presents a self-signed certificate. Bun honours this option; Node ignores it.
+                    tls: { rejectUnauthorized: false }
+                } as RequestInit);
+                const body = await response.json() as { data?: { id: string; id_v1?: string }[] };
+                const match = body.data?.find(area => area.id_v1 === `/groups/${v1Id}`);
+                if (match) {
+                    console.log(`Hue group ${v1Id} resolved to entertainment area ${match.id}`);
+                    return match.id;
+                }
+            } catch (error) {
+                console.log('Could not query entertainment areas over Clip v2:', error);
+            }
+        }
+
+        const byName = groups.find(g => g.name.toLowerCase() === wanted.toLowerCase());
+        if (byName) {
+            console.log(`Hue group '${wanted}' resolved by name to ${byName.id}`);
+            return byName.id;
+        }
+
+        const only = groups.length === 1 ? groups[0] : undefined;
+        if (only) {
+            console.log(`Hue group '${wanted}' not found; using the only entertainment area ${only.name} (${only.id})`);
+            return only.id;
+        }
+
+        return wanted;
     }
 
     shutdown(): void {

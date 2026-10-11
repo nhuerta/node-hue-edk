@@ -57,6 +57,7 @@ export class HueWrapper {
   setLightBrightness(lightId: number, brightness: number): boolean;
 
   getLightIds(): string[];
+  getGroups(): { id: string; name: string }[];
   update(): boolean;
   getStatus(): BridgeStatus;
   shutdown(): boolean;
